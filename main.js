@@ -9,6 +9,7 @@ function createWindow(){
         width:600,
         height:600,
         backgroundColor:"#ffffff",
+        icon:`file://${__dirname}/dist/assets/icon.png`,
         webPreferences:{
             nodeIntegration: true,
             preload: path.join(__dirname,'preload.js')
@@ -38,13 +39,17 @@ app.on('activate',function(){
     }
 })
 
-ipcMain.on('screenshot:capture',(e)=>{
+ipcMain.on('takeScreenshot',(e)=>{
 
     console.log('main method call')
     desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:1080, height: 720}})
     .then(source =>{
-        let img = source[0].name;
-        win.webContents.send('screenshot:captured   ',img);
+        let img = {
+            base64: source[0].thumbnail.toDataURL(),
+            name: source[0].name,
+            displayId: source[0].display_id
+        };
+        win.webContents.send('screenshot',img);
 
         console.log('img --> ',img);
     })
